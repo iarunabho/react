@@ -1,18 +1,31 @@
 import React, { Component } from "react";
 import classes from "./App.css";
-import Person from "./Person/Person";
+import Persons from "../components/Persons/Persons";
+import Cockpit from "../components/Cockpit/Cockpit";
+import withClass from "../hoc/withClass";
+import Aux from "../hoc/Aux";
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    console.log("[App.js] constructor");
+  }
   state = {
     persons: [
-      { id: "asafa1", name: "Max", age: "28" },
-      { id: "bfdgr1", name: "Manu", age: "29" },
-      { id: "dfhere1", name: "Stephanie", age: "26" },
+      { id: "asafa1", name: "Max", age: 28 },
+      { id: "bfdgr1", name: "Manu", age: 29 },
+      { id: "dfhere1", name: "Stephanie", age: 26 },
     ],
     otherState: "Some other value",
     showPersons: false,
+    showCockpit: true,
+    changeCounter: 0,
   };
 
+  static getDerivedStateFromProps(props, state) {
+    console.log("[App.js] getDerivedStateFromProps", props);
+    return state;
+  }
   // switchNameHandler = (newName) => {
   //   // console.log("Was Clicked");
   //   this.setState({
@@ -23,6 +36,19 @@ class App extends Component {
   //     ],
   //   });
   // };
+  componentDidMount() {
+    console.log("[App.js] componentDidMount");
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log("[App.js] shouldComponentUpdate");
+    return true;
+  }
+
+  componentDidUpdate(nextProps, nextState) {
+    console.log("[App.js] componentDidUpdate");
+  }
+
   nameChangeHandler = (event, id) => {
     const personIndex = this.state.persons.findIndex((p) => {
       return (p.id = id);
@@ -36,7 +62,12 @@ class App extends Component {
     const persons = [...this.state.persons];
     persons[personIndex] = person;
 
-    this.setState({ persons: persons });
+    this.setState((prevState, props) => {
+      return {
+        persons: persons,
+        changeCounter: prevState.changeCounter + 1,
+      };
+    });
   };
 
   deletePersonHandler = (personIndex) => {
@@ -50,26 +81,20 @@ class App extends Component {
   };
 
   render() {
+    console.log("[App.js] rendering..");
     let persons = null;
-    let btnClass = "";
+    // let btnClass = "";
 
     if (this.state.showPersons) {
       persons = (
-        <div>
-          {this.state.persons.map((persons, index) => {
-            return (
-              <Person
-                click={() => this.deletePersonHandler(index)}
-                name={persons.name}
-                age={persons.age}
-                key={persons.id}
-                changed={(event) => this.nameChangeHandler(event, persons.id)}
-              />
-            );
-          })}
-        </div>
+        <Persons
+          persons={this.state.persons}
+          clicked={this.deletePersonHandler}
+          changed={this.nameChangeHandler}
+        />
       );
-      btnClass = classes.Red;
+
+      // btnClass = classes.Red;
       // style.backgroundColor = "red";
     }
     //let classes = ["red", "bold"].join(" ");
@@ -80,22 +105,26 @@ class App extends Component {
     // if (this.state.persons.length <= 1) {
     //   classes.push("bold");
     // }
-    const assignedClass = [];
-    if (this.state.persons.length <= 3) {
-      assignedClass.push(classes.red);
-    }
-    if (this.state.persons.length <= 1) {
-      assignedClass.push(classes.bold);
-    }
+
     return (
-      <div className={classes.App}>
-        <h1>Hi, I'm a React Developer.</h1>
-        <p className={assignedClass.join(" ")}>This is really working!</p>
-        <button className={btnClass} onClick={this.togglePersonsHandler}>
-          Toggle Persons
+      <Aux>
+        <button
+          onClick={() => {
+            this.setState({ showCockpit: false });
+          }}
+        >
+          Remove Cockpit
         </button>
+        {this.state.showCockpit ? (
+          <Cockpit
+            title={this.props.appTitle}
+            showPersons={this.state.showPersons}
+            personsLength={this.state.persons.length}
+            clicked={this.togglePersonsHandler}
+          />
+        ) : null}
         {persons}
-      </div>
+      </Aux>
     );
     // return React.createElement(
     //   "div",
@@ -104,7 +133,7 @@ class App extends Component {
     // );
   }
 }
-export default App;
+export default withClass(App, classes.App);
 
 /* <div>
 <Person
